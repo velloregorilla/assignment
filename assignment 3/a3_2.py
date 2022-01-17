@@ -8,6 +8,60 @@ import re
 from spacy.training.example import Example
 
 """
+
+df = pd.read_csv("assignment 3\output.csv")
+
+categories = set(df.iloc[:, 0].unique())
+entity = df.iloc[:, 0]
+word = df.iloc[:, 1]
+count = 0
+
+df.iloc[:, 1] = df.iloc[:, 1].fillna('--')
+### NaN with --
+
+
+### dataset format [["",{"entities":[[<start>,<end>,<entity = "PERSON">]]}], []]
+
+
+###nan_rows = df[df.isnull().any(1)].reset_index().iloc[:, 0].to_list()
+# print(nan_rows)
+
+### the below code creates dataset from csv file
+string = ""
+dataset = []
+entities_for_sentence = []
+for key, value in zip(entity, word):
+    str_len = len(string)
+    word_len = len(value)
+    #print(key, " ", value, " ", str_len, " ", word_len+str_len)
+
+    if (value == "--"):
+        ## if value is -- it means the sentence is over
+        ## enter the complete data into the format mentioned above
+        entities = {"entities": entities_for_sentence}
+        sentences = []
+        sentences.append(string)
+        sentences.append(entities)
+        dataset.append(sentences)
+        entities_for_sentence = []
+        string = ""
+
+    else:
+        string = string + value + " "
+        temp = []
+        temp.append(str_len)
+        temp.append(word_len+str_len)
+        temp.append(key)
+        entities_for_sentence.append(temp)
+
+    count = count+1
+
+file = 'dataset.json'
+with open(file, 'w') as f:
+    json.dump(dataset, f)
+### json dataset created
+
+
 def load_data(file):
     with open(file, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -18,6 +72,7 @@ TRAIN_DATA = load_data("assignment 3\dataset.json")
 
 
 def train_spacy(data, iterations):
+    ### this function creates models from the dataset created
     TRAIN_DATA = data
     nlp = spacy.blank("en")
     print(nlp.pipe_names)
@@ -48,28 +103,9 @@ def train_spacy(data, iterations):
             print(losses)
     return (nlp)
 
-
-def clean_text(text):
-    cleaned = re.sub(r"[\(\[].*?[\)\]]", "", text)
-    return (cleaned)
-
-
 nlp = train_spacy(TRAIN_DATA, 20)
 nlp.to_disk("assignment 3\ner_model")
 
-
-def training(model_name):
-    with open("assignment 3\dataset.json", "r", encoding="utf-8") as f:
-        texts = json.load(f)
-    sentences = texts
-    w2v_model = Word2Vec(min_count=5,
-                         window=2,
-                         size=500,
-                         sample=6e-5,
-                         alpha=0.03,
-                         min_alpha=0.0007,
-                         negative=20
-                         )
 """
 
 
